@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 
 def train_and_eval(
     test_size=0.2,
-    random_state=33,
+    random_state=1012,
     model_path=None,
 ):
     df_shuffle = pd.read_csv("./df_shuffle_1000_reduced.csv")
