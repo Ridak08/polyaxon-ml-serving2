@@ -1,0 +1,21 @@
+version: 1.1
+kind: component
+name: train
+tags: [examples]
+
+inputs:
+- {name: test_size, type: float, isOptional: true, value: 0.2}
+- {name: random_state, type: int, isOptional: true, value: 33}
+
+run:
+  kind: job
+  init:
+  - git: {"url": "https://github.com/Ridak08/polyaxon-ml-serving2"}
+  container:
+    image: polyaxon/polyaxon-examples:ml-serving
+    workingDir: "{{ globals.artifacts_path }}/polyaxon-ml-serving2/train"
+    command: ["python", "-u", "run.py"]
+    args: [
+      "--test_size={{ test_size }}",
+      "--random_state={{ random_state }}"
+    ]
