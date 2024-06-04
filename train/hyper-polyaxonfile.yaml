@@ -3,7 +3,7 @@ kind: operation
 name: tune
 matrix:
   kind: random
-  numRuns: 10
+  numRuns: 4
   params:
     test_size:
       kind: choice
