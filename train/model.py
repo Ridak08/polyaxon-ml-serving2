@@ -13,7 +13,7 @@ def train_and_eval(
     random_state=33,
     model_path=None,
 ):
-    df_shuffle = pd.read_csv("./df_shuffle_1000.csv")
+    df_shuffle = pd.read_csv("./df_shuffle_1000_reduced.csv")
     features = df_shuffle.drop(" Label", axis=1).values
     labels = df_shuffle[" Label"].values
     
