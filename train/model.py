@@ -15,8 +15,8 @@ def train_and_eval(
 ):
     columnas = ['Protocol', 'Flow Duration', 'Total Fwd Packets', 'Total Backward Packets', 'Total Length of Fwd Packets', 'Total Length of Bwd Packets', 'Inbound', 'Label']
     df_shuffle = pd.read_csv("./df_shuffle_1000_reduced.csv", usecols = columnas, skipinitialspace=True)
-    features = df_shuffle.drop(" Label", axis=1).values
-    labels = df_shuffle[" Label"].values
+    features = df_shuffle.drop("Label", axis=1).values
+    labels = df_shuffle["Label"].values
     
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size, random_state=random_state)
 
