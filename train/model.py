@@ -19,9 +19,9 @@ def train_and_eval(
     
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size, random_state=random_state)
 
-    #scaler = StandardScaler()
-    #X_train = scaler.fit_transform(X_train)
-    #X_test = scaler.transform(X_test)
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
 
     model_dnn_1 = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(64, 128, 256, 256, 256, 128, 128, 64, 8), random_state=1, activation='relu')
     model_dnn_1.fit(X_train, y_train)
