@@ -25,7 +25,7 @@ class DataFeatures(BaseModel):
     Total_Backward_Packets: int
     Total_Length_of_Fwd_Packets: float
     Total_Length_of_Bwd_Packets: float
-    Inbound: float
+    Inbound: int
     
 def get_features(data: DataFeatures) -> np.ndarray:
     return np.array(
