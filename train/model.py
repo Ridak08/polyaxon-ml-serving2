@@ -13,8 +13,8 @@ def train_and_eval(
     random_state=1012,
     model_path=None,
 ):
-    columnas = ['Protocol', 'Flow Duration', 'Total Fwd Packets', 'Total Backward Packets', 'Total Length of Fwd Packets', 'Total Length of Bwd Packets', 'Inbound', 'Label']
-    df_shuffle = pd.read_csv("./df_shuffle_1000_reduced.csv", usecols = columnas, skipinitialspace=True)
+    columnas = ['source_port', 'destination_port', 'protocol', 'packets', 'length','fin_flag', 'syn_flag', 'rst_flag','psh_flag', 'ack_flag', 'urg_flag','cwe_flag', 'ece_flag', 'Label']
+    df_shuffle = pd.read_csv("./df_2000_reduced_adapted.csv", usecols = columnas, skipinitialspace=True)
     features = df_shuffle.drop("Label", axis=1).values
     labels = df_shuffle["Label"].values
     
