@@ -19,13 +19,19 @@ classifier = load_model("./model.joblib")
 
 
 class DataFeatures(BaseModel):
-    Protocol: int
-    Flow_Duration: int
-    Total_Fwd_Packets: int
-    Total_Backward_Packets: int
-    Total_Length_of_Fwd_Packets: float
-    Total_Length_of_Bwd_Packets: float
-    Inbound: int
+    source_port: int
+    destination_port: int
+    protocol: int
+    packets: int
+    length: float
+    fin_flag: float
+    syn_flag: int
+    rst_flag: int
+    psh_flag: int
+    ack_flag: int
+    urg_flag: float
+    cwe_flag: float
+    ece_flag: int
     
 def get_features(data: DataFeatures) -> np.ndarray:
     return np.array(
