@@ -24,13 +24,13 @@ class DataFeatures(BaseModel):
     protocol: int
     packets: int
     length: float
-    fin_flag: float
+    fin_flag: int
     syn_flag: int
     rst_flag: int
     psh_flag: int
     ack_flag: int
-    urg_flag: float
-    cwe_flag: float
+    urg_flag: int
+    cwe_flag: int
     ece_flag: int
     
 def get_features(data: DataFeatures) -> np.ndarray:
