@@ -35,7 +35,7 @@ class DataFeatures(BaseModel):
     
 def get_features(data: DataFeatures) -> np.ndarray:
     return np.array(
-        [data.Protocol, data.Flow_Duration, data.Total_Fwd_Packets, data.Total_Backward_Packets, data.Total_Length_of_Fwd_Packets, data.Total_Length_of_Bwd_Packets, data.Inbound],
+        [data.source_port, data.destination_port, data.protocol, data.packets, data.length, data.fin_flag, data.syn_flag, data.rst_flag, data.psh_flag, data.ack_flag, data.urg_flag, data.cwe_flag , data.ece_flag],
         ndmin=2,
     )
 
