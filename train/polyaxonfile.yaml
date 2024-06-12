@@ -12,7 +12,7 @@ run:
   init:
   - git: {"url": "https://github.com/Ridak08/polyaxon-ml-serving2"}
   container:
-    image: polyaxon/polyaxon-examples:ml-serving
+    image: polyaxon/polyaxon-examples-tensorflow:ml-serving
     workingDir: "{{ globals.artifacts_path }}/polyaxon-ml-serving2/train"
     command: ["python", "-u", "run.py"]
     args: [
