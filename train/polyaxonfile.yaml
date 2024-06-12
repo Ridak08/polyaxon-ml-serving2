@@ -1,6 +1,6 @@
 version: 1.1
 kind: component
-name: train
+name: prueba1
 tags: [examples]
 
 inputs:
