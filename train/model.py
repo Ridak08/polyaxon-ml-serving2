@@ -7,104 +7,77 @@ import sklearn
 import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
+import tensorflow as tf
+from tensorflow import keras
+from keras.models import Sequential
+from keras.layers import Dense,GRU,Embedding,Dropout,Flatten,Conv1D,MaxPooling1D,LSTM
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression, SGDClassifier
+from sklearn.neighbors import KNeighborsClassifier
 
-def train_and_eval_cnn(
+def train_and_eval(
     test_size=0.2,
     random_state=1012,
     model_path=None,
 ):
     columnas = ['source_port', 'destination_port', 'protocol', 'packets', 'length','fin_flag', 'syn_flag', 'rst_flag','psh_flag', 'ack_flag', 'urg_flag','cwe_flag', 'ece_flag', 'Label']
     df_shuffle = pd.read_csv("./df_5000_final_14_caracteristicas.csv", usecols = columnas, skipinitialspace=True)
-    features = df_shuffle.drop("Label", axis=1).values
-    labels = df_shuffle["Label"].values
+    features = train_features_scaled.shape[1]
+    nClasses = len(df[' Label'].unique())
+
+    # Importación de bibliotecas y División de datos
+    train_df, test_df = train_test_split(df_shuffle, test_size = 0.20) #Division del dataframe en un conjunto de  entrenamiento y prueba con un 85% de entrenamiento y 15% de prueba.
     
-    X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size, random_state=random_state)
-
+    # Separación de características y etiquetas 
+    train_features = train_df.copy()
+    train_labels = train_features.pop(' Label')
+    
+    test_features = test_df.copy()
+    test_labels = test_features.pop(' Label')
+    
+    # Creación de un diccionario de características
+    train_features_dict = {name: np.array(value) 
+                             for name, value in train_features.items()}
+    
+    # Estandarización de características (llevar a la misma escala)
+    from sklearn.preprocessing import StandardScaler
     scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    train_features_scaled = scaler.fit_transform(train_features)
+    
+    test_features_scaled = scaler.transform(test_features)
+    train_features_scaled.shape
 
-    X_train = X_train.reshape(-1, features.shape[1], 1)
-    X_test = X_test.reshape(-1, features.shape[1], 1)
+    keras.backend.clear_session()
+    tf.random.set_seed(42)
+    np.random.seed(42)
+    
+    model_cnn_2 = keras.models.Sequential([
+        keras.layers.Conv1D(32, kernel_size=4, strides=2, padding='same', activation='relu', input_shape=(features, 1)),
+        keras.layers.Conv1D(64, kernel_size=4, strides=2, padding='same', activation='relu'),
+        keras.layers.MaxPooling1D(),
+        keras.layers.Conv1D(128, kernel_size=2, strides=2),  # Reduced kernel size to 2
+        keras.layers.Flatten(),
+        keras.layers.Dense(80, activation='relu'),
+        keras.layers.Dense(45, activation='relu'),
+        keras.layers.Dense(nClasses, activation='softmax')
+    ])
+    num_epochs = 25
 
-    def conv1d(input_data, kernel, stride=1, padding='same'):
-        # Calculate output shape
-        output_shape = (input_data.shape[0], (input_data.shape[1] - kernel.shape[0]) // stride + 1, kernel.shape[1])
-        
-        # Initialize output array
-        output = np.zeros(output_shape)
-        
-        # Perform convolution
-        for i in range(output_shape[1]):
-            for j in range(kernel.shape[0]):
-                output[:, i, :] += input_data[:, i*stride:i*stride+kernel.shape[0], :] * kernel[j, :]
-        
-        return output
+    model_cnn_2.compile(optimizer='adam', loss= 'sparse_categorical_crossentropy', metrics= ['accuracy'])
+    early_stopping_cb = keras.callbacks.EarlyStopping(patience = 10, restore_best_weights = True)
 
-    def max_pooling(input_data, pool_size=2):
-        # Calculate output shape
-        output_shape = (input_data.shape[0], input_data.shape[1] // pool_size, input_data.shape[2])
-        
-        # Initialize output array
-        output = np.zeros(output_shape)
-        
-        # Perform max pooling
-        for i in range(output_shape[1]):
-            output[:, i, :] = np.max(input_data[:, i*pool_size:i*pool_size+pool_size, :], axis=1)
-        
-        return output
+    model_cnn_2.fit(train_features_scaled, train_labels, epochs = num_epochs, callbacks = [early_stopping_cb], validation_split= 0.20)
+    
+    c = model_cnn_2.predict(test_features_scaled)
+    a=np.argmax(c, axis=1)
+    b = test_labels
 
-    def flatten(input_data):
-        return input_data.reshape(input_data.shape[0], -1)
+    acc = (accuracy_score(a, b)*100)
+    prec = sklearn.metrics.precision_score(b, a, labels=None, pos_label=1, average='macro', sample_weight=None, zero_division='warn')
+    rec = metrics.recall_score(b, a, labels=None, pos_label=1, average='weighted', sample_weight=None)
+    f1 = f1_score(a, b, average='macro')
+    results = results._append({'Method':'CNN 2', 'Accuracy':acc, 'Precision':prec, 'F1_Score':f1, 'Recall':rec}, ignore_index=True)
 
-    def dense(input_data, weights, bias):
-        return np.dot(input_data, weights) + bias
-
-    def sgd(model, X, y, learning_rate=0.01):
-        # Calculate loss
-        loss = np.mean((model.predict(X) - y) ** 2)
-        
-        # Calculate gradients
-        gradients = []
-        for layer in model.layers:
-            gradients.append(np.dot(layer.input_data.T, (model.predict(X) - y)))
-        
-        # Update weights
-        for i, layer in enumerate(model.layers):
-            layer.weights -= learning_rate * gradients[i]
-        
-        return loss
-
-    class CNN:
-        def __init__(self):
-            self.layers = []
-
-        def add_conv1d(self, num_filters, kernel_size, strides, padding, activation):
-            self.layers.append({'type': 'conv1d', 'num_filters': num_filters, 'kernel_size': kernel_size, 'strides': strides, 'padding': padding, 'activation': activation})
-
-        def add_max_pooling(self, pool_size):
-            self.layers.append({'type': 'max_pooling', 'pool_size': pool_size})
-
-        def add_flatten(self):
-            self.layers.append({'type': 'flatten'})
-
-        def add_dense(self, num_units, activation):
-            self.layers.append({'type': 'dense', 'num_units': num_units, 'activation': activation})
-
-        def predict(self, X):
-            output = X
-            for layer in self.layers:
-                if layer['type'] == 'conv1d':
-                    output = conv1d(output, np.random.rand(layer['num_filters'], layer['kernel_size'], 1), layer['strides'], layer['padding'])
-                    output = np.maximum(output, 0) if layer['activation'] == 'relu' else output
-                elif layer['type'] == 'max_pooling':
-                    output = max_pooling(output, layer['pool_size'])
-                elif layer['type'] == 'flatten':
-                    output = flatten(output)
-                elif layer['type'] == 'dense':
-                    output = dense(output, np.random.rand(output.shape[1], layer['num_units']), np.zeros(layer['num_units']))
-                    output = np.maximum(output, 0) if layer['activation'] == 'relu' else output
-            return output
-
-    model_cnn = CNN()
-    model_cnn.add_conv1d(32, kernel_size=4, strides=2, padding='same', activation='relu')
+    if model_path:
+        joblib.dump(model_dnn_1, model_path)
+    return results
